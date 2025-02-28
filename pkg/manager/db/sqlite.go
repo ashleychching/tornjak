@@ -48,6 +48,21 @@ func (db *LocalSqliteDb) CreateServerEntry(sinfo types.ServerInfo) error {
 	return err
 }
 
+func (db *LocalSqliteDb) DeleteServerEntry(name string) error {
+	statement, err := db.database.Prepare("DELETE FROM servers WHERE servername = ?")
+	if err != nil {
+		return errors.Errorf("Unable to execute SQL query: %v", err)
+	}
+	defer statement.Close()
+
+	_, err = statement.Exec(name)
+	if err != nil {
+		return errors.Errorf("Failed to delete server entry: %v", err)
+	}
+
+	return nil
+}
+
 func (db *LocalSqliteDb) GetServers() (types.ServerInfoList, error) {
 	rows, err := db.database.Query("SELECT servername, address, tls, mtls, ca, cert, key FROM servers")
 	if err != nil {

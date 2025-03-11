@@ -50,7 +50,7 @@ class ServersListTable extends React.Component<ServersListTableProp, ServersList
             listTableData: [],
         };
         this.prepareTableData = this.prepareTableData.bind(this);
-        // this.deleteServer = this.deleteServer.bind(this);
+        this.deleteServer = this.deleteServer.bind(this);
     }
 
     componentDidMount() {
@@ -71,9 +71,17 @@ class ServersListTable extends React.Component<ServersListTableProp, ServersList
         if (typeof (data) === "string" || data === undefined)
             return
         data.forEach(val => listData.push(Object.assign({}, val)));
-        let listtabledata: { id: string; serverName: string; serverAddress: string; tls: string; mtls: string;}[] = [];
+        let listtabledata: { id: string; serverName: string; serverAddress: string; tls: string; mtls: string; deleteAction: JSX.Element;}[] = [];
         for (let i = 0; i < listData.length; i++) {
-            listtabledata[i] = { id: "", serverName: "", serverAddress: "", tls: "", mtls: ""};
+            listtabledata[i] = { 
+                id: "", 
+                serverName: "", 
+                serverAddress: "", 
+                tls: "", 
+                mtls: "",
+                deleteAction: <button onClick={() => this.deleteServer(listData[i].props.server.name)}> Delete</button>
+            };
+    
             listtabledata[i]["id"] = (i + 1).toString();
             listtabledata[i]["serverName"] = listData[i].props.server.name;
             listtabledata[i]["serverAddress"] = listData[i].props.server.address;
@@ -87,32 +95,32 @@ class ServersListTable extends React.Component<ServersListTableProp, ServersList
 
     //Note: future implementation - server delete function 
     // keep code
-    // deleteServer(selectedRows: readonly DenormalizedRow[]) {
-    //     if (!selectedRows || selectedRows.length === 0) return "";
-    //     let server: { name: string }[] = [], successMessage
+    deleteServer(selectedRows: readonly DenormalizedRow[]) {
+        if (!selectedRows || selectedRows.length === 0) return "";
+        let server: { name: string }[] = [], successMessage
 
-    //     for (let i = 0; i < selectedRows.length; i++) {
-    //         server[i] = { name: selectedRows[i].cells[1].value };
-    //         if (IsManager) {
-    //             successMessage = this.TornjakApi.serverDelete(this.props.globalServerSelected, { server: server[i] }, this.props.serversListUpdateFunc, this.props.globalServersList);
-    //         } else {
-    //             successMessage = this.TornjakApi.localServerDelete({ server: server[i] }, this.props.serversListUpdateFunc, this.props.globalServersList);
-    //         }
-    //         successMessage.then(function (result) {
-    //             if (result === "SUCCESS") {
-    //                 window.alert(`CLUSTER "${server[i].name}" DELETED SUCCESSFULLY!`);
-    //                 window.location.reload();
-    //             } else {
-    //                 window.alert(`Error deleting server "${server[i].name}": ` + result);
-    //             }
-    //             return;
-    //         })
-    //     }
-    // }
+        for (let i = 0; i < selectedRows.length; i++) {
+            server[i] = { name: selectedRows[i].cells[1].value };
+            if (IsManager) {
+                successMessage = this.TornjakApi.serverDelete(this.props.globalServerSelected, { server: server[i] }, this.props.serversListUpdateFunc, this.props.globalServersList);
+            } else {
+                successMessage = this.TornjakApi.localServerDelete({ server: server[i] }, this.props.serversListUpdateFunc, this.props.globalServersList);
+            }
+            successMessage.then(function (result) {
+                if (result === "SUCCESS") {
+                    window.alert(`CLUSTER "${server[i].name}" DELETED SUCCESSFULLY!`);
+                    window.location.reload();
+                } else {
+                    window.alert(`Error deleting server "${server[i].name}": ` + result);
+                }
+                return;
+            })
+        }
+    }
 
 
     render() {
-        const { listTableData } = this.state;
+        // const { listTableData } = this.state;
         const headerData = [
             {
                 header: '#No',
@@ -133,17 +141,21 @@ class ServersListTable extends React.Component<ServersListTableProp, ServersList
             {
                 header: 'mTLS',
                 key: 'mtls',
+            },
+            { 
+                header: 'Actions', 
+                key: 'deleteAction' 
             }
         ];
         return (
             <div>
-                <Table
+                {/* <Table
                     entityType={"Server"}
                     listTableData={listTableData}
                     headerData={headerData}
-                    deleteEntity={undefined}
+                    deleteEntity={this.deleteServer}
                     banEntity={undefined}
-                    downloadEntity={undefined} />
+                    downloadEntity={undefined} /> */}
             </div>
         );
     }

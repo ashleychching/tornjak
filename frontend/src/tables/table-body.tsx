@@ -31,6 +31,7 @@ type BodyProp = {
                         ShapeOf<DataTableCustomSelectionProps<never>, E>,
     // updated user roles
     globalUserRoles: string[],
+    onDelete: (serverName: string) => void;
 }
 
 type BodyState = {}
@@ -44,6 +45,7 @@ class Body extends React.Component<BodyProp, BodyState> {
     }
 
     render() {
+        const { entityType, onDelete } = this.props;
         return (
             <TableBody>
                 {this.props.rows.map((row: { cells: DataTableCell[]; } & DataTableRow<string>, key: React.Key | null | undefined) => (
@@ -67,6 +69,15 @@ class Body extends React.Component<BodyProp, BodyState> {
                                     cell.value)}
                             </TableCell>
                         ))}
+
+                        {entityType === "Server" && onDelete && (
+                            <TableCell>
+                                <button onClick={() => onDelete(row.cells[0].value)}>
+                                    Delete
+                                </button>
+                            </TableCell>
+                        )}
+
                         {((this.props.entityType === "Agent" && this.TornjakHelper.checkRolesAdminUser(this.props.globalUserRoles)) || (this.props.entityType === "Agent" && !Auth_Server_Uri)) &&
                             <TableCell>
                                 <div>

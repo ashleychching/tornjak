@@ -344,6 +344,28 @@ class TornjakApi extends Component<TornjakApiProp, TornjakApiState> {
     return response.data;
   }
 
+  //  serverDelete - returns success message after successful deletion of a manager
+  async serverDelete(serverName: string) {
+    try {
+        const response = await fetch("http://localhost:8080/manager-api/server/delete", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: serverName }),
+        });
+
+        const result = await response.text();
+        if (result === "SUCCESS") {
+            return "SUCCESS";
+        } else {
+            throw new Error("Failed to delete server");
+        }
+    } catch (error) {
+        console.error("Error deleting server:", error);
+        return "Failed to delete server";
+    }
+  }
+
+
   // populateClustersUpdate returns the list of clusters with their info in manager mode for the selected server
   populateClustersUpdate = (serverName: string,
     clustersListUpdateFunc: { (globalClustersList: ClustersList[]): void; },

@@ -10,6 +10,7 @@ import {
   ServerInfo,
   EntriesList,
   ClustersList,
+  ServersList,
   DebugServerInfo,
   FederationsList
 } from './types';
@@ -309,7 +310,27 @@ class TornjakApi extends Component<TornjakApiProp, TornjakApiState> {
   }
 
   // manager apis
-
+    // localServerDelete - returns success message after successful deletion of a entry in Local mode for the server
+    async localServerDelete(
+      inputData: { ids: string[] },
+      serversListUpdateFunc: { (globalServersList: ServersList[]): void },
+      globalServersList: ServersList[]
+    ) {
+      try {
+        const response = await axios.delete(GetApiServerUri(apiEndpoints.spireServerInfoApi), {
+          data: { server: inputData.ids },
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          crossdomain: true,
+        });
+        serversListUpdateFunc(globalServersList.filter(el => !inputData.ids.includes(el.id)));
+        return response.data;
+      } catch (error) {
+        return error;
+      }
+    }
+  
   // entryDelete - returns success message after successful deletion of a entry in manager mode
   async entryDelete(serverName: string, inputData: { ids: string[] }, entriesListUpdateFunc: { (globalEntriesList: EntriesList[]): void }, globalEntriesList: any[]) {
     const response = await axios.post(GetApiServerUri("/manager-api/tornjak/entry/delete/") + serverName, inputData,
@@ -343,6 +364,22 @@ class TornjakApi extends Component<TornjakApiProp, TornjakApiState> {
       })
     return response.data;
   }
+
+    // serverDelete - returns success message after successful deletion of a server in manager mode
+    async serverDelete(serverName: string, inputData: { server: { name: string; }; }, serversListUpdateFunc: { (globalServersList: ServersList[]): void }, globalServersList: any[]) {
+      const response = await axios.post(GetApiServerUri("/manager-api/tornjak/server/delete/") + serverName, inputData,
+        {
+          crossdomain: true,
+        })
+        .then(function (response) {
+          serversListUpdateFunc(globalServersList.filter(server => server.name !== inputData.server.name)); 
+          return response.data;
+        })
+        .catch(function (error) {
+          return error.message;
+        })
+      return response.data;
+    }
 
   // populateClustersUpdate returns the list of clusters with their info in manager mode for the selected server
   populateClustersUpdate = (serverName: string,

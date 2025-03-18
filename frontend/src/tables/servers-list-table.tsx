@@ -1,12 +1,12 @@
 import React from "react";
 import { connect } from 'react-redux';
-// import IsManager from 'components/is_manager';
+import IsManager from 'components/is_manager';
 import {
     serversListUpdateFunc
 } from 'redux/actions';
 import Table from './list-table';
 import { ServersList } from "components/types";
-// import { DenormalizedRow } from "carbon-components-react";
+import { DenormalizedRow } from "carbon-components-react";
 import { RootState } from "redux/reducers";
 import TornjakApi from 'components/tornjak-api-helpers';
 
@@ -50,7 +50,7 @@ class ServersListTable extends React.Component<ServersListTableProp, ServersList
             listTableData: [],
         };
         this.prepareTableData = this.prepareTableData.bind(this);
-        // this.deleteServer = this.deleteServer.bind(this);
+        this.deleteServer = this.deleteServer.bind(this);
     }
 
     componentDidMount() {
@@ -87,28 +87,28 @@ class ServersListTable extends React.Component<ServersListTableProp, ServersList
 
     //Note: future implementation - server delete function 
     // keep code
-    // deleteServer(selectedRows: readonly DenormalizedRow[]) {
-    //     if (!selectedRows || selectedRows.length === 0) return "";
-    //     let server: { name: string }[] = [], successMessage
+    deleteServer(selectedRows: readonly DenormalizedRow[]) {
+        if (!selectedRows || selectedRows.length === 0) return "";
+        let server: { name: string }[] = [], successMessage
 
-    //     for (let i = 0; i < selectedRows.length; i++) {
-    //         server[i] = { name: selectedRows[i].cells[1].value };
-    //         if (IsManager) {
-    //             successMessage = this.TornjakApi.serverDelete(this.props.globalServerSelected, { server: server[i] }, this.props.serversListUpdateFunc, this.props.globalServersList);
-    //         } else {
-    //             successMessage = this.TornjakApi.localServerDelete({ server: server[i] }, this.props.serversListUpdateFunc, this.props.globalServersList);
-    //         }
-    //         successMessage.then(function (result) {
-    //             if (result === "SUCCESS") {
-    //                 window.alert(`CLUSTER "${server[i].name}" DELETED SUCCESSFULLY!`);
-    //                 window.location.reload();
-    //             } else {
-    //                 window.alert(`Error deleting server "${server[i].name}": ` + result);
-    //             }
-    //             return;
-    //         })
-    //     }
-    // }
+        for (let i = 0; i < selectedRows.length; i++) {
+            server[i] = { name: selectedRows[i].cells[1].value };
+            if (IsManager) {
+                successMessage = this.TornjakApi.serverDelete(this.props.globalServerSelected, { server: server[i] }, this.props.serversListUpdateFunc, this.props.globalServersList);
+            } else {
+                successMessage = this.TornjakApi.localServerDelete({ ids: [server[i].name] }, this.props.serversListUpdateFunc, this.props.globalServersList);
+            }
+            successMessage.then(function (result) {
+                if (result === "SUCCESS") {
+                    window.alert(`CLUSTER "${server[i].name}" DELETED SUCCESSFULLY!`);
+                    window.location.reload();
+                } else {
+                    window.alert(`Error deleting server "${server[i].name}": ` + result);
+                }
+                return;
+            })
+        }
+    }
 
 
     render() {

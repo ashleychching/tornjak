@@ -162,6 +162,7 @@ export interface SpireHealthCheckFreq {
 
 // servers
 export interface ServersList {
+  id: string; // id of server 
   name: string; // Name of Server
   address: string; // url
   mtls: string; // mtls

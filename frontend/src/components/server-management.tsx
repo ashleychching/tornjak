@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios'
+import { Button } from '@mui/material';
 import GetApiServerUri from './helpers';
 import IsManager from './is_manager';
 import {
@@ -9,6 +10,7 @@ import {
 import { showResponseToast } from './error-api';
 import { ServersList } from './types'
 import { RootState } from 'redux/reducers';
+import TornjakApi from './tornjak-api-helpers';
 import { ToastContainer } from 'react-toastify';
 import {
   TextInput,
@@ -40,6 +42,7 @@ type ServerManagementState = {
   keyFileText?: string,
   message: string,
   statusOK: string,
+  selectedServer: ServersList,
 }
 
 const Server = (props: { server: ServersList }) => (
@@ -52,8 +55,10 @@ const Server = (props: { server: ServersList }) => (
 )
 
 class ServerManagement extends Component<ServerManagementProp, ServerManagementState> {
+  TornjakApi: TornjakApi;
   constructor(props: ServerManagementProp) {
     super(props);
+    this.TornjakApi = new TornjakApi(props);
     this.state = {
       formServerName: "",
       formServerAddress: "",
@@ -67,6 +72,7 @@ class ServerManagement extends Component<ServerManagementProp, ServerManagementS
       keyFileText: "",
       message: "",
       statusOK: "",
+      selectedServer: "",
     };
     this.onCertFileChange = this.onCertFileChange.bind(this);
     this.onCAFileChange = this.onCAFileChange.bind(this);
@@ -89,6 +95,52 @@ class ServerManagement extends Component<ServerManagementProp, ServerManagementS
       })
       .catch((error) => showResponseToast(error, { caption: "Could not refresh server state." }))
   }
+
+  deleteServer = () => {
+    const serverToDelete = this.state.formServerName; // Assuming you have a selected server state
+    if (!serverToDelete) {
+      return window.alert("Please select a server to delete!");
+    }
+  
+    const confirmDelete = window.confirm("Are you sure you want to delete this server?");
+    if (!confirmDelete) {
+      return;
+    }
+  
+    const inputData = {
+      server: {
+        name: serverToDelete.formServerName, // Assuming the server object has a `name` property
+      },
+    };
+  
+    let successMessage;
+  
+    if (IsManager) {
+      successMessage = this.TornjakApi.serverDelete(
+        this.props.globalServersList, // Pass the selected server for manager mode
+        inputData,
+        this.props.serversListUpdateFunc, // Update the servers list after deletion
+        this.props.globalServersList // Pass the current list of servers
+      );
+    } else {
+      successMessage = this.TornjakApi.localServerDelete(
+        inputData,
+        this.props.serversListUpdateFunc, // Update the servers list after deletion
+        this.props.globalServersList // Pass the current list of servers
+      );
+    }
+  
+    successMessage.then((result) => {
+      if (result === "SUCCESS") {
+        window.alert("SERVER DELETED SUCCESSFULLY!");
+        window.location.reload(); // Reload the page to reflect changes
+      } else {
+        window.alert("Error deleting server: " + result);
+      }
+      return;
+    });
+  };
+
 
   serverList() {
     if (typeof this.props.globalServersList !== 'undefined') {
@@ -360,6 +412,15 @@ class ServerManagement extends Component<ServerManagementProp, ServerManagementS
           <AccordionItem
             title={<h3>Servers List</h3>} open>
             <Table data={this.serverList()} id="table-1" />
+            <div className="delete-server-button">
+              <Button
+                variant="contained"
+                color="error"
+                onClick={this.deleteServer}
+              >
+                Delete Server
+              </Button>
+            </div>
           </AccordionItem>
         </Accordion>
         <ToastContainer

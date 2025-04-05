@@ -141,7 +141,7 @@ class ServersListTable extends React.Component<ServersListTableProp, ServersList
                     entityType={"Server"}
                     listTableData={listTableData}
                     headerData={headerData}
-                    deleteEntity={undefined}
+                    deleteEntity={this.deleteServer}
                     banEntity={undefined}
                     downloadEntity={undefined} />
             </div>

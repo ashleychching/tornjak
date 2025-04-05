@@ -42,7 +42,7 @@ type ServerManagementState = {
   keyFileText?: string,
   message: string,
   statusOK: string,
-  selectedServer: ServersList,
+  selectedServer: ServersList | null,
 }
 
 const Server = (props: { server: ServersList }) => (
@@ -72,7 +72,7 @@ class ServerManagement extends Component<ServerManagementProp, ServerManagementS
       keyFileText: "",
       message: "",
       statusOK: "",
-      selectedServer: "",
+      selectedServer: null,
     };
     this.onCertFileChange = this.onCertFileChange.bind(this);
     this.onCAFileChange = this.onCAFileChange.bind(this);
@@ -97,7 +97,7 @@ class ServerManagement extends Component<ServerManagementProp, ServerManagementS
   }
 
   deleteServer = () => {
-    const serverToDelete = this.state.formServerName; // Assuming you have a selected server state
+    const serverToDelete = this.state.selectedServer;
     if (!serverToDelete) {
       return window.alert("Please select a server to delete!");
     }
@@ -109,7 +109,7 @@ class ServerManagement extends Component<ServerManagementProp, ServerManagementS
   
     const inputData = {
       server: {
-        name: serverToDelete.formServerName, // Assuming the server object has a `name` property
+        name: serverToDelete.name, 
       },
     };
   
@@ -117,23 +117,23 @@ class ServerManagement extends Component<ServerManagementProp, ServerManagementS
   
     if (IsManager) {
       successMessage = this.TornjakApi.serverDelete(
-        this.props.globalServersList, // Pass the selected server for manager mode
+        serverToDelete.name,
         inputData,
-        this.props.serversListUpdateFunc, // Update the servers list after deletion
-        this.props.globalServersList // Pass the current list of servers
+        this.props.serversListUpdateFunc,
+        this.props.globalServersList 
       );
     } else {
       successMessage = this.TornjakApi.localServerDelete(
-        inputData,
-        this.props.serversListUpdateFunc, // Update the servers list after deletion
-        this.props.globalServersList // Pass the current list of servers
+        { ids: [serverToDelete.name] },
+        this.props.serversListUpdateFunc, 
+        this.props.globalServersList 
       );
     }
   
     successMessage.then((result) => {
       if (result === "SUCCESS") {
         window.alert("SERVER DELETED SUCCESSFULLY!");
-        window.location.reload(); // Reload the page to reflect changes
+        window.location.reload(); 
       } else {
         window.alert("Error deleting server: " + result);
       }
@@ -412,15 +412,7 @@ class ServerManagement extends Component<ServerManagementProp, ServerManagementS
           <AccordionItem
             title={<h3>Servers List</h3>} open>
             <Table data={this.serverList()} id="table-1" />
-            <div className="delete-server-button">
-              <Button
-                variant="contained"
-                color="error"
-                onClick={this.deleteServer}
-              >
-                Delete Server
-              </Button>
-            </div>
+        
           </AccordionItem>
         </Accordion>
         <ToastContainer

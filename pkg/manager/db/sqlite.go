@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
@@ -50,6 +51,7 @@ func (db *LocalSqliteDb) CreateServerEntry(sinfo types.ServerInfo) error {
 
 func (db *LocalSqliteDb) DeleteServerEntry(name string) error {
 	statement, err := db.database.Prepare("DELETE FROM servers WHERE servername = ?")
+	log.Printf("Attempting to delete server: %s", name)
 	if err != nil {
 		return errors.Errorf("Unable to execute SQL query: %v", err)
 	}

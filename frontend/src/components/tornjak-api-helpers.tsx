@@ -318,7 +318,7 @@ class TornjakApi extends Component<TornjakApiProp, TornjakApiState> {
     ) {
       try {
         const response = await axios.delete(GetApiServerUri(apiEndpoints.spireServerInfoApi), {
-          data: { server: inputData.ids },
+          data: { ids: inputData.ids },
           headers: {
             'Content-Type': 'application/json'
           },
@@ -367,15 +367,20 @@ class TornjakApi extends Component<TornjakApiProp, TornjakApiState> {
 
     // serverDelete - returns success message after successful deletion of a server in manager mode
     async serverDelete(serverName: string, inputData: { server: { name: string; }; }, serversListUpdateFunc: { (globalServersList: ServersList[]): void }, globalServersList: any[]) {
-      const response = await axios.post(GetApiServerUri("/manager-api/tornjak/server/delete/") + serverName, inputData,
+      const response = await axios.post(
+        GetApiServerUri("/manager-api/tornjak/server/delete/") + serverName, inputData,
         {
           crossdomain: true,
         })
         .then(function (response) {
-          serversListUpdateFunc(globalServersList.filter(server => server.name !== inputData.server.name)); 
+          serversListUpdateFunc(globalServersList.filter(el => 
+            el.name !== inputData.server.name)); 
           return response.data;
         })
         .catch(function (error) {
+          if (axios.isAxiosError(error)) {
+            throw new Error(error.response?.data?.message || error.message);
+          }
           return error.message;
         })
       return response.data;

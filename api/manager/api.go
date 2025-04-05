@@ -38,15 +38,17 @@ func (s *Server) RegisterServer(inp RegisterServerRequest) error {
 }
 
 type DeleteServerRequest struct {
-	Name string `json:"name"`
+	Server struct {
+		Name string `json:"name"`
+	} `json:"server"`
 }
 
 func (s *Server) DeleteServer(inp DeleteServerRequest) error {
-	if len(inp.Name) == 0 {
+	if len(inp.Server.Name) == 0 {
 		return errors.New("server name is required for deletion")
 	}
 
-	err := s.db.DeleteServerEntry(inp.Name)
+	err := s.db.DeleteServerEntry(inp.Server.Name)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete server")
 	}
